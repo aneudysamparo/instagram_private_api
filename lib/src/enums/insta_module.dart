@@ -1,0 +1,18 @@
+enum InstaModule {
+  feedTimeline,
+  newsfeed,
+  profile,
+  mediaViewProfile,
+  videoViewProfile,
+  photoViewProfile,
+  followers,
+  following,
+  selfFollowers,
+  selfFollowing,
+  commentLikers,
+  commentOwner,
+  feedContextualPost,
+  feedContextualHashtag,
+  feedContextualLocation,
+  feedContextualNewsfeedMultiMediaLiked,
+}
