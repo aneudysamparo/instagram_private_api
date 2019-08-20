@@ -19,10 +19,7 @@ abstract class InstaFeed<T, K> {
     do {
       _state = await request();
       setState(_state);
-      final items = transform(_state);
-      for(final item in items){
-        yield item;
-      }
+      yield* Stream.fromIterable(transform(_state));
     } while(moreAvailable);
   }
 }
