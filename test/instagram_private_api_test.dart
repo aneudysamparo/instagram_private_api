@@ -1,57 +1,61 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
-import 'package:image/image.dart';
 import 'package:instagram_private_api/instagram_private_api.dart';
 import 'package:instagram_private_api/src/core/insta_state.dart';
-import 'package:instagram_private_api/src/types/timeline_media_types.dart';
 import 'package:instagram_private_api/src/utilities/response_interceptor.dart';
-import 'package:instagram_private_api/src/utilities/time.dart';
-import 'package:instagram_private_api/src/utilities/video_utility.dart';
 
-import 'create_response.dart';
-
-void main() {
-  mainAsync().then((_) => print('done'));
-}
-
-void saveJsonAsResponse(Map<String, dynamic> json) {}
-
-Future mainAsync() async {
+Future<void> main() async {
   final env = Platform.environment;
   final username = env['IG_USERNAME'];
   final password = env['IG_PASSWORD'];
 
-  final cookiesFile = File('test/state/state_$username.json');
-  // ignore: avoid_slow_async_io
-  final cookiesExist = await cookiesFile.exists();
+  final StateStorage storage = FileStateStorage(username, 'test/state/');
+  final InstaClient ig = InstaClient();
+  ig.request.httpClient.interceptors.add(
+      ResponseInterceptor(ig, (json) => storage.saveState(jsonEncode(json))));
 
-  InstaClient ig;
-
-  if (!cookiesExist) {
-    ig = InstaClient();
+  if (!await storage.exists()) {
     ig.state.init();
-    await cookiesFile.create(recursive: true);
+    await storage.createState();
+    await ig.account.login(username, password);
   } else {
-    ig = InstaClient(
-        state:
-            InstaState.fromJson(jsonDecode(await cookiesFile.readAsString())));
+    ig.state = InstaState.fromJson(jsonDecode(await storage.loadState()));
   }
-  ig.request.httpClient.interceptors.add(ResponseInterceptor(
-      ig, (json) => cookiesFile.writeAsString(jsonEncode(json))));
 
-  if (!cookiesExist) {
-    print(jsonEncode(await ig.account.login(username, password)));
-  }
   print('logged in!');
-  try {
+}
 
-  } catch (e) {
-    print(e);
+mixin StateStorage {
+  FutureOr<bool> exists();
+
+  FutureOr<void> createState();
+
+  FutureOr<String> loadState();
+
+  FutureOr<void> saveState(String encodedState);
+}
+
+class FileStateStorage implements StateStorage {
+  File _stateFile;
+
+  FileStateStorage(String username, [String stateFolder = '']) {
+    _stateFile = File('$stateFolder/state_$username.json');
   }
 
-  print('done!');
+  @override
+  FutureOr<void> createState() => _stateFile.create(recursive: true);
+
+  @override
+  FutureOr<String> loadState() => _stateFile.readAsString();
+
+  @override
+  FutureOr<void> saveState(String encodedState) =>
+      _stateFile.writeAsString(encodedState);
+
+  @override
+  FutureOr<bool> exists() => _stateFile.exists();
 }
 
 void jsonPrint(Object o) => print(jsonEncode(o));
