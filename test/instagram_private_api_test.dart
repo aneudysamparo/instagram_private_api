@@ -2,29 +2,41 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:image/image.dart';
 import 'package:instagram_private_api/instagram_private_api.dart';
 import 'package:instagram_private_api/src/core/insta_state.dart';
 import 'package:instagram_private_api/src/utilities/response_interceptor.dart';
+import 'package:instagram_private_api/src/utilities/time.dart';
+import 'package:instagram_private_api/src/utilities/video_utility.dart';
+
+import 'create_response.dart';
 
 Future<void> main() async {
   final env = Platform.environment;
   final username = env['IG_USERNAME'];
   final password = env['IG_PASSWORD'];
 
-  final StateStorage storage = FileStateStorage(username, 'test/state/');
-  final InstaClient ig = InstaClient();
+  final StateStorage storage = FileStateStorage(username, 'test/state');
+  final bool storageExists = await storage.exists();
+  final InstaClient ig = InstaClient(
+      state: storageExists
+          ? InstaState.fromJson(jsonDecode(await storage.loadState()))
+          : null);
   ig.request.httpClient.interceptors.add(
       ResponseInterceptor(ig, (json) => storage.saveState(jsonEncode(json))));
 
-  if (!await storage.exists()) {
+  if (!storageExists) {
     ig.state.init();
     await storage.createState();
     await ig.account.login(username, password);
-  } else {
-    ig.state = InstaState.fromJson(jsonDecode(await storage.loadState()));
   }
-
   print('logged in!');
+
+  try {
+    //for testing
+  } catch (e) {
+    print(e);
+  }
 }
 
 mixin StateStorage {
@@ -45,17 +57,18 @@ class FileStateStorage implements StateStorage {
   }
 
   @override
-  FutureOr<void> createState() => _stateFile.create(recursive: true);
+  FutureOr<void> createState() async =>
+      await _stateFile.create(recursive: true);
 
   @override
-  FutureOr<String> loadState() => _stateFile.readAsString();
+  FutureOr<String> loadState() async => await _stateFile.readAsString();
 
   @override
-  FutureOr<void> saveState(String encodedState) =>
-      _stateFile.writeAsString(encodedState);
+  FutureOr<void> saveState(String encodedState) async =>
+      await _stateFile.writeAsString(encodedState);
 
   @override
-  FutureOr<bool> exists() => _stateFile.exists();
+  FutureOr<bool> exists() async => await _stateFile.exists();
 }
 
 void jsonPrint(Object o) => print(jsonEncode(o));

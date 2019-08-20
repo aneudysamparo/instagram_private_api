@@ -5,6 +5,8 @@ import 'package:instagram_private_api/src/enums/insta_module.dart';
 import 'package:instagram_private_api/src/repositories/insta_repository.dart';
 import 'package:instagram_private_api/src/responses/media/blocked_response.dart';
 import 'package:instagram_private_api/src/responses/media/configure_response.dart';
+import 'package:instagram_private_api/src/responses/media/configure_to_story_response.dart';
+import 'package:instagram_private_api/src/responses/media/configure_to_video_story_response.dart';
 import 'package:instagram_private_api/src/responses/media/configure_video_response.dart';
 import 'package:instagram_private_api/src/responses/media/upload_finish_response.dart';
 import 'package:instagram_private_api/src/responses/status_response.dart';
@@ -140,7 +142,7 @@ class MediaRepository extends InstaRepository {
                 if (usertags != null) 'usertags': jsonEncode(usertags)
               })));
 
-  Future<Map<String, dynamic>> configureToStory({
+  Future<MediaConfigureToStoryResponse> configureToStory({
     @required String uploadId,
     @required int width,
     @required int height,
@@ -151,36 +153,97 @@ class MediaRepository extends InstaRepository {
     List<String> storyStickerIds,
     String creationSurface = 'camera',
     String captureType = 'normal',
+    List<String> recipientUsers,
+    List<String> threadIds,
   }) async =>
-      await client.request.post('/api/v1/media/configure_to_story/',
-          form: client.request.sign({
-            'supported_capabilities_new': client.state.supportedCapabilities,
-            'camera_session_id': client.state.clientSessionId,
-            'timezone_offset': client.state.timezoneOffset,
-            '_csrftoken': client.state.cookieCsrfToken,
-            'client_shared_at': (utcNow().floor() - 35).toString(),
-            if (storyStickerIds != null)
-              'story_sticker_ids': storyStickerIds.join(','),
-            'configure_mode': configureMode,
-            'source_type': sourceType,
-            '_uid': client.state.cookieUserId,
-            'device_id': client.state.device.deviceId,
-            '_uuid': client.state.device.uuid,
-            'creation_surface': creationSurface,
-            'capture_type': captureType,
-            'upload_id': uploadId,
-            'client_timestamp': utcNow().floor().toString(),
-            'device': client.state.device.devicePayload,
-            'edits': {
-              'crop_original_size': [width.toDouble(), height.toDouble()],
-              'crop_center': cropCenter ?? [0.0, -0.0],
-              'crop_zoom': cropZoom,
-            },
-            'extra': {
-              'source_width': width,
-              'source_height': height,
-            },
-          }));
+      MediaConfigureToStoryResponse.fromJson(
+          await client.request.post('/api/v1/media/configure_to_story/',
+              form: client.request.sign({
+                'supported_capabilities_new':
+                    client.state.supportedCapabilities,
+                'camera_session_id': client.state.clientSessionId,
+                'timezone_offset': client.state.timezoneOffset,
+                '_csrftoken': client.state.cookieCsrfToken,
+                'client_shared_at': (utcNow().floor() - 35).toString(),
+                if (storyStickerIds != null)
+                  'story_sticker_ids': storyStickerIds.join(','),
+                'configure_mode': configureMode,
+                'source_type': sourceType,
+                '_uid': client.state.cookieUserId,
+                'device_id': client.state.device.deviceId,
+                '_uuid': client.state.device.uuid,
+                'creation_surface': creationSurface,
+                'capture_type': captureType,
+                'upload_id': uploadId,
+                'client_timestamp': utcNow().floor().toString(),
+                'device': client.state.device.devicePayload,
+                'edits': {
+                  'crop_original_size': [width.toDouble(), height.toDouble()],
+                  'crop_center': cropCenter ?? [0.0, -0.0],
+                  'crop_zoom': cropZoom,
+                },
+                'extra': {
+                  'source_width': width,
+                  'source_height': height,
+                },
+                if (recipientUsers != null) 'recipient_users': recipientUsers,
+                if (threadIds != null) 'thread_ids': threadIds,
+              })));
+
+  Future<MediaConfigureToVideoStoryResponse> configureToVideoStory({
+    @required String uploadId,
+    @required VideoData videoData,
+    bool audioMuted = false,
+    String configureMode = '1',
+    String sourceType = '3',
+    List<String> storyStickerIds,
+    String creationSurface = 'camera',
+    String captureType = 'normal',
+    String cameraPosition = 'front',
+    List<String> recipientUsers,
+    List<String> threadIds,
+  }) async =>
+      MediaConfigureToVideoStoryResponse.fromJson(
+          await client.request.post('/api/v1/media/configure_to_story/',
+              query: {
+                'video': '1',
+              },
+              form: client.request.sign({
+                'supported_capabilities_new':
+                    client.state.supportedCapabilities,
+                'camera_session_id': client.state.clientSessionId,
+                'timezone_offset': client.state.timezoneOffset,
+                '_csrftoken': client.state.cookieCsrfToken,
+                'client_shared_at': (utcNow().floor() - 35).toString(),
+                if (storyStickerIds != null)
+                  'story_sticker_ids': storyStickerIds.join(','),
+                'configure_mode': configureMode,
+                'source_type': sourceType,
+                '_uid': client.state.cookieUserId,
+                'device_id': client.state.device.deviceId,
+                '_uuid': client.state.device.uuid,
+                'creation_surface': creationSurface,
+                'capture_type': captureType,
+                'upload_id': uploadId,
+                'client_timestamp': utcNow().floor().toString(),
+                'device': client.state.device.devicePayload,
+                'length': videoData.duration / 1000.0,
+                'clips': [
+                  {
+                    'length': videoData.duration / 1000.0,
+                    'source_type': sourceType,
+                    'camera_position': cameraPosition,
+                  }
+                ],
+                'extra': {
+                  'source_width': videoData.width,
+                  'source_height': videoData.height,
+                },
+                'audio_muted': audioMuted,
+                'poster_frame_index': 0,
+                if (recipientUsers != null) 'recipient_users': recipientUsers,
+                if (threadIds != null) 'thread_ids': threadIds,
+              })));
 
   Future<MediaUploadFinishResponse> uploadFinish(
           {@required String uploadId,
