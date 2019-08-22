@@ -8,6 +8,7 @@ import 'package:instagram_private_api/src/responses/media/configure_to_story_res
 import 'package:instagram_private_api/src/responses/media/configure_to_video_story_response.dart';
 import 'package:instagram_private_api/src/responses/media/configure_video_response.dart';
 import 'package:instagram_private_api/src/services/insta_service.dart';
+import 'package:instagram_private_api/src/types/stickers/insta_sticker.dart';
 import 'package:instagram_private_api/src/types/timeline_media_types.dart';
 import 'package:instagram_private_api/src/utilities/time.dart';
 import 'package:instagram_private_api/src/utilities/video_utility.dart';
@@ -122,6 +123,7 @@ class PublishService extends InstaService {
     String sourceType = '3',
     String creationSurface = 'camera',
     String captureType = 'normal',
+    InstaStickerConfiguration stickerConfiguration,
   }) async {
     final String uploadId = id ?? utcNow().floor().toString();
     final JpegData jpegData = JpegData()..read(photo);
@@ -147,29 +149,32 @@ class PublishService extends InstaService {
       configureMode: (recipientUsers != null || threadIds != null) ? '2' : '1',
 
       /// todo: inspect
-      recipientUsers: recipientUsers.map((x) => x.toString()),
+      recipientUsers: recipientUsers?.map((x) => x.toString()),
       threadIds: threadIds,
+      additional: stickerConfiguration?.build(),
     );
   }
 
-  Future<MediaConfigureToVideoStoryResponse> videoStory(
-      {@required Uint8List video,
-      @required Uint8List posterFrame,
-      List<int> recipientUsers,
-      List<String> threadIds,
+  Future<MediaConfigureToVideoStoryResponse> videoStory({
+    @required Uint8List video,
+    @required Uint8List posterFrame,
+    List<int> recipientUsers,
+    List<String> threadIds,
 
-      /// for ig.upload
-      String id,
-      List<String> sharingUserIds,
-      int uploadTries = 1,
-      Duration transcodeDelay,
+    /// for ig.upload
+    String id,
+    List<String> sharingUserIds,
+    int uploadTries = 1,
+    Duration transcodeDelay,
 
-      /// for ig.media
-      bool audioMuted = false,
-      String sourceType = '3',
-      String creationSurface = 'camera',
-      String captureType = 'normal',
-      String cameraPosition = 'front'}) async {
+    /// for ig.media
+    bool audioMuted = false,
+    String sourceType = '3',
+    String creationSurface = 'camera',
+    String captureType = 'normal',
+    String cameraPosition = 'front',
+    InstaStickerConfiguration stickerConfiguration,
+  }) async {
     final videoInfo = VideoData(video);
     final uploadId = id ?? utcNow().floor().toString();
     await _retryUntil(
@@ -211,8 +216,9 @@ class PublishService extends InstaService {
       cameraPosition: cameraPosition,
 
       /// todo: inspect
-      recipientUsers: recipientUsers.map((x) => x.toString()),
+      recipientUsers: recipientUsers?.map((x) => x.toString()),
       threadIds: threadIds,
+      additional: stickerConfiguration?.build(),
     );
   }
 

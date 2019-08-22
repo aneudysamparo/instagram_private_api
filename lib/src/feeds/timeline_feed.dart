@@ -3,6 +3,7 @@ import 'package:instagram_private_api/src/core/insta_feed.dart';
 import 'package:instagram_private_api/src/enums/request_reason.dart';
 import 'package:instagram_private_api/src/responses/feed/timeline_response.dart';
 import 'package:instagram_private_api/src/utilities/case_convert.dart';
+import 'package:instagram_private_api/src/utilities/general_utility.dart';
 
 class TimelineFeed
     extends InstaFeed<FeedTimelineResponse, FeedTimelineResponseFeedItemsItem> {
@@ -32,7 +33,7 @@ class TimelineFeed
         'is_async_ads_double_request': 0,
         'will_sound_on': 0,
         'is_async_ads_rti': 0,
-        'reason': CaseConvert.snakeCase(reason.toString()),
+        'reason': CaseConvert.snakeCase(enumToString(reason)),
         if (reason == RequestReason.pagination)
           'max_id': _nextMaxId
       }, headers: {

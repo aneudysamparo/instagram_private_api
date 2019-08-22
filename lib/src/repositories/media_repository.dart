@@ -150,11 +150,11 @@ class MediaRepository extends InstaRepository {
     double cropZoom = 1.0,
     String configureMode = '1',
     String sourceType = '3',
-    List<String> storyStickerIds,
     String creationSurface = 'camera',
     String captureType = 'normal',
     List<String> recipientUsers,
     List<String> threadIds,
+    Map<String, dynamic> additional,
   }) async =>
       MediaConfigureToStoryResponse.fromJson(
           await client.request.post('/api/v1/media/configure_to_story/',
@@ -165,8 +165,6 @@ class MediaRepository extends InstaRepository {
                 'timezone_offset': client.state.timezoneOffset,
                 '_csrftoken': client.state.cookieCsrfToken,
                 'client_shared_at': (utcNow().floor() - 35).toString(),
-                if (storyStickerIds != null)
-                  'story_sticker_ids': storyStickerIds.join(','),
                 'configure_mode': configureMode,
                 'source_type': sourceType,
                 '_uid': client.state.cookieUserId,
@@ -188,6 +186,7 @@ class MediaRepository extends InstaRepository {
                 },
                 if (recipientUsers != null) 'recipient_users': recipientUsers,
                 if (threadIds != null) 'thread_ids': threadIds,
+                if (additional != null) ...additional,
               })));
 
   Future<MediaConfigureToVideoStoryResponse> configureToVideoStory({
@@ -196,12 +195,12 @@ class MediaRepository extends InstaRepository {
     bool audioMuted = false,
     String configureMode = '1',
     String sourceType = '3',
-    List<String> storyStickerIds,
     String creationSurface = 'camera',
     String captureType = 'normal',
     String cameraPosition = 'front',
     List<String> recipientUsers,
     List<String> threadIds,
+    Map<String, dynamic> additional,
   }) async =>
       MediaConfigureToVideoStoryResponse.fromJson(
           await client.request.post('/api/v1/media/configure_to_story/',
@@ -215,8 +214,6 @@ class MediaRepository extends InstaRepository {
                 'timezone_offset': client.state.timezoneOffset,
                 '_csrftoken': client.state.cookieCsrfToken,
                 'client_shared_at': (utcNow().floor() - 35).toString(),
-                if (storyStickerIds != null)
-                  'story_sticker_ids': storyStickerIds.join(','),
                 'configure_mode': configureMode,
                 'source_type': sourceType,
                 '_uid': client.state.cookieUserId,
@@ -243,6 +240,7 @@ class MediaRepository extends InstaRepository {
                 'poster_frame_index': 0,
                 if (recipientUsers != null) 'recipient_users': recipientUsers,
                 if (threadIds != null) 'thread_ids': threadIds,
+                if (additional != null) ...additional,
               })));
 
   Future<MediaUploadFinishResponse> uploadFinish(

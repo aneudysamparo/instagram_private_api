@@ -1,6 +1,7 @@
 import 'package:instagram_private_api/src/core/insta_request.dart';
 import 'package:instagram_private_api/src/repositories/account_repository.dart';
 import 'package:instagram_private_api/src/repositories/friendships_repository.dart';
+import 'package:instagram_private_api/src/repositories/fundraiser_repository.dart';
 import 'package:instagram_private_api/src/repositories/highlights_repository.dart';
 import 'package:instagram_private_api/src/repositories/launcher_repository.dart';
 import 'package:instagram_private_api/src/repositories/location_repository.dart';
@@ -31,6 +32,7 @@ class InstaClient {
   HighlightsRepository highlights;
   UploadRepository upload;
   LocationRepository location;
+  FundraiserRepository fundraiser;
 
   /// services
   PublishService publish;
@@ -50,6 +52,7 @@ class InstaClient {
     highlights = HighlightsRepository(this);
     upload = UploadRepository(this);
     location = LocationRepository(this);
+    fundraiser = FundraiserRepository(this);
 
     publish = PublishService(this);
   }

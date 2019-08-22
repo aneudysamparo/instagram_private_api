@@ -15,4 +15,5 @@ enum InstaModule {
   feedContextualHashtag,
   feedContextualLocation,
   feedContextualNewsfeedMultiMediaLiked,
+  stickerTray,
 }
